@@ -1,31 +1,28 @@
 package server;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 
 public class GestioneChat{    
     private ArrayList<ServerThread> sockets = new ArrayList<>();
     private ServerSocket s; 
+    private Socket socket = new Socket();
 
     public void start(){
           try{
-              System.out.println("server in attesa");
-              s = new ServerSocket(6789);
-              
-              for(int i = 0; i < 2; i++) { 
-                sockets.add(new ServerThread(s.accept())); 
-                sockets.get(i).start();
-                System.out.println("Client n. " + (i+1) + " connesso");
-              }
-              
-              s.close();
+            System.out.println("server in attesa");
+            s = new ServerSocket(6789);
+
+            for(int i = 0; i < 2; i++) { 
+              sockets.add(new ServerThread(s.accept())); 
+              sockets.get(i).start();           
+            }             
+            s.close();
           } catch (Exception e){
-              System.out.println(e.getMessage());
-              System.out.println("Errore durante l'istanza del messaggio!");
-              System.exit(1);
+                System.out.println(e.getMessage());
+                System.out.println("Errore durante l'istanza del messaggio!");
+                System.exit(1);
           }
     }
   
@@ -57,19 +54,24 @@ public class ServerThread extends Thread{
         inDalClient = new BufferedReader(new InputStreamReader(clientS.getInputStream()));
         outVersoClient = new DataOutputStream(clientS.getOutputStream());
         
-        outVersoClient.writeBytes("Inserisci username");
-        usernameClient = inDalClient.readLine();
+        outVersoClient.writeBytes("Inserisci username" + '\n');       
+        usernameClient = inDalClient.readLine();       
+        outVersoClient.writeBytes(usernameClient + " connesso" + '\n');
         
         for(;;) {
             String mex = inDalClient.readLine();
             if(mex.equals("FINE")){
-                outVersoClient.writeBytes(usernameClient + ": utente disconnesso");
+                System.out.println(usernameClient + ": utente disconnesso" + '\n');
                 sockets.remove(this);
                 break;
             }
-            else if (sockets.size() > 1)    outVersoClient.writeBytes(usernameClient + ": " + mex + " (ricevuta e ritrasmessa)" + '\n');
-            else outVersoClient.writeBytes("Nessuno è connesso" + '\n');
-            
+            else if (sockets.size() > 1) {
+                for (ServerThread s : sockets)
+                    {
+                        if(s != this) s.outVersoClient.writeBytes(usernameClient + ": " + mex + "\n");
+                    }
+            }              
+            else outVersoClient.writeBytes("Nessuno è connesso" + '\n');           
         }
         outVersoClient.close();
         inDalClient.close();
