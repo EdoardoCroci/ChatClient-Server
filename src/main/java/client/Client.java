@@ -50,7 +50,7 @@ public class SendThread extends Thread{
         try {
             for(;;) {
                 String mex = input.readLine();
-                if(mex.equals("FINE")) {
+                if(mex.equalsIgnoreCase("FINE")) {
                     outToServer.writeBytes("Connessione in chiusura..." + '\n'); 
                     outToServer.writeBytes(mex + '\n');
                     close();                   

@@ -61,7 +61,7 @@ public class ServerThread extends Thread{
         
         for(;;) {
             String mex = inDalClient.readLine();
-            if(mex.equals("FINE")){
+            if(mex.equalsIgnoreCase("FINE")){
                 System.out.println(usernameClient + ": utente disconnesso" + '\n');
                 sockets.remove(this);
                 break;
