@@ -16,14 +16,14 @@ public class GestioneChat{
 
             for(int i = 0; i < 2; i++) { 
               sockets.add(new ServerThread(s.accept())); 
-              sockets.get(i).start();           
+              sockets.get(i).start();                          
             }             
             s.close();
-          } catch (Exception e){
+            }catch (Exception e){
                 System.out.println(e.getMessage());
                 System.out.println("Errore durante l'istanza del messaggio!");
                 System.exit(1);
-          }
+            }
     }
   
     public static void main(String[] args) {
@@ -55,7 +55,8 @@ public class ServerThread extends Thread{
         outVersoClient = new DataOutputStream(clientS.getOutputStream());
         
         outVersoClient.writeBytes("Inserisci username" + '\n');       
-        usernameClient = inDalClient.readLine();       
+        usernameClient = inDalClient.readLine();  
+        System.out.println(usernameClient + " connesso");
         outVersoClient.writeBytes(usernameClient + " connesso" + '\n');
         
         for(;;) {
