@@ -6,8 +6,8 @@ import java.util.ArrayList;
 
 public class GestioneChat{    
     private ArrayList<ServerThread> sockets = new ArrayList<>();
-    private ServerSocket s; 
-    private Socket socket = new Socket();
+    private ArrayList <String> utenti = new ArrayList<>();
+    private ServerSocket s;
 
     public void start(){
           try{
@@ -31,52 +31,60 @@ public class GestioneChat{
         tcpServer.start();
     }
 
-public class ServerThread extends Thread{
-    private Socket clientS = null;
-    private BufferedReader inDalClient;
-    private DataOutputStream outVersoClient;
-    private String usernameClient;
-    
-    public ServerThread (Socket socket){
-        this.clientS = socket;
-    }
+    public class ServerThread extends Thread{
+        private Socket clientS;
+        private BufferedReader inDalClient;
+        private DataOutputStream outVersoClient;
+        private String usernameClient;
 
-    @Override
-    public void run (){
-        try{
-            comunica();
-        } catch (Exception e){
-            e.toString();
+
+        public ServerThread (Socket socket){
+            this.clientS = socket;
         }
-    }
 
-    public void comunica () throws Exception {
-        inDalClient = new BufferedReader(new InputStreamReader(clientS.getInputStream()));
-        outVersoClient = new DataOutputStream(clientS.getOutputStream());
-        
-        outVersoClient.writeBytes("Inserisci username" + '\n');       
-        usernameClient = inDalClient.readLine();  
-        System.out.println(usernameClient + " connesso");
-        outVersoClient.writeBytes(usernameClient + " connesso" + '\n');
-        
-        for(;;) {
-            String mex = inDalClient.readLine();
-            if(mex.equalsIgnoreCase("FINE")){
-                System.out.println(usernameClient + ": utente disconnesso" + '\n');
-                sockets.remove(this);
-                break;
+        @Override
+        public void run (){
+            try{
+                comunica();
+            } catch (Exception e){
+                e.toString();
             }
-            else if (sockets.size() > 1) {
-                for (ServerThread s : sockets)
-                    {
-                        if(s != this) s.outVersoClient.writeBytes(usernameClient + ": " + mex + "\n");
-                    }
-            }              
-            else outVersoClient.writeBytes("Nessuno è connesso" + '\n');           
         }
-        outVersoClient.close();
-        inDalClient.close();
-        clientS.close();
+
+        public void comunica () throws Exception {
+            inDalClient = new BufferedReader(new InputStreamReader(clientS.getInputStream()));
+            outVersoClient = new DataOutputStream(clientS.getOutputStream());
+            outVersoClient.writeBytes("Inserisci username" + '\n');
+            usernameClient = inDalClient.readLine();
+            if(utenti.isEmpty()) utenti.add(usernameClient);
+            else{
+                for(int i = 0; i < utenti.size(); i++){
+                    while(usernameClient.equals(utenti.get(i))){
+                        outVersoClient.writeBytes("Nome utente non disponibile, inserirne uno nuovo" + '\n');
+                        usernameClient = inDalClient.readLine();
+                    }
+                }
+            }
+                System.out.println(usernameClient + " connesso");
+                outVersoClient.writeBytes(usernameClient + " connesso" + '\n');
+            for(;;) {
+                String mex = inDalClient.readLine();
+                if(mex.equalsIgnoreCase("FINE")){
+                    System.out.println(usernameClient + ": utente disconnesso" + '\n');
+                    sockets.remove(this);
+                    break;
+                }
+                else if (sockets.size() > 1) {
+                    for (ServerThread s : sockets)
+                        {
+                            if(s != this) s.outVersoClient.writeBytes(usernameClient + ": " + mex + "\n");
+                        }
+                }
+                else outVersoClient.writeBytes("Nessuno è connesso" + '\n');
+            }
+            outVersoClient.close();
+            inDalClient.close();
+            clientS.close();
+        }
     }
-}
 }

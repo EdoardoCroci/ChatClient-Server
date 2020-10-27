@@ -22,10 +22,10 @@ public class Client {
         input = new BufferedReader(new InputStreamReader(System.in));
         
         try {
-            // Recupero ip localhost
+            //Recupero ip localhost
             InetAddress ip = InetAddress.getByName("localhost"); 
           
-            // Conessione al server 
+            //Conessione al server
             s = new Socket(ip, serverPort); 
 
             // Apertura canali
@@ -40,76 +40,76 @@ public class Client {
         }    
     }
 
-public class SendThread extends Thread{
-    public SendThread() {
-        start();
-    }
-    
-    @Override 
-    public void run() {
-        try {
-            for(;;) {
-                String mex = input.readLine();
-                if(mex.equalsIgnoreCase("FINE")) {
-                    outToServer.writeBytes("Connessione in chiusura..." + '\n'); 
-                    outToServer.writeBytes(mex + '\n');
-                    close();                   
-                    break;
-                }
-                else {
-                   System.out.println("IO: " + mex);
-                    outToServer.writeBytes(mex + '\n'); 
-                }              
-            }           
+    public class SendThread extends Thread{
+        public SendThread() {
+            start();
         }
-        catch (Exception ex) {
-            ex.toString();
-            System.exit(1);
-        }
-    } 
-    
-    public void close() {
-        try {           
-            inFromServer.close();
-            outToServer.close();
-            s.close();      
-            readThread.close();
-            this.stop();
-        }
-        catch(Exception ex) {
-            ex.toString();
-        }         
-        System.exit(0);
-    }
-}
 
-public class ReadThread extends Thread{
-    public ReadThread() {
-        start();
+        @Override
+        public void run() {
+            try {
+                for(;;) {
+                    String mex = input.readLine();
+                    if(mex.equalsIgnoreCase("FINE")) {
+                        outToServer.writeBytes("Connessione in chiusura..." + '\n');
+                        outToServer.writeBytes(mex + '\n');
+                        close();
+                        break;
+                    }
+                    else {
+                       System.out.println("IO: " + mex);
+                        outToServer.writeBytes(mex + '\n');
+                    }
+                }
+            }
+            catch (Exception ex) {
+                ex.toString();
+                System.exit(1);
+            }
+        }
+
+        public void close() {
+            try {
+                inFromServer.close();
+                outToServer.close();
+                s.close();
+                readThread.close();
+                this.stop();
+            }
+            catch(Exception ex) {
+                ex.toString();
+            }
+            System.exit(0);
+        }
     }
-    
-    @Override 
-    public void run() {
-        try {
-            for(;;) {               
-                String mex = inFromServer.readLine();
-                if(mex != null) System.out.println(mex);
-            }           
+
+    public class ReadThread extends Thread{
+        public ReadThread() {
+            start();
         }
-        catch (Exception ex) {
-            ex.toString();
-            System.exit(1);
+
+        @Override
+        public void run() {
+            try {
+                for(;;) {
+                    String mex = inFromServer.readLine();
+                    if(mex != null) System.out.println(mex);
+                }
+            }
+            catch (Exception ex) {
+                ex.toString();
+                System.exit(1);
+            }
         }
-    } 
-    
-    public void close() {
-        try {
-            this.stop();
+
+        public void close() {
+            try {
+                this.stop();
+            }
+            catch(Exception ex) {
+                ex.toString();
+            }
+            System.exit(0);
         }
-        catch(Exception ex) {
-            ex.toString();
-        }         
-        System.exit(0);      
     }
-}
 }
